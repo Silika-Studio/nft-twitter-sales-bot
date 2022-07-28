@@ -1,29 +1,21 @@
-import { Currency, MarketType } from "./types";
+import { CurrencyRecord, MarketType } from './types';
 
-export const currencies: Currency = {
-    // ETH
+export const currencies: CurrencyRecord = {
     '0x0000000000000000000000000000000000000000': {
         name: 'ETH',
         decimals: 18,
-        threshold: 1,
     },
-    // WETH
     '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2': {
         name: 'WETH',
         decimals: 18,
-        threshold: 1,
     },
-    // DAI
     '0x6b175474e89094c44da98b954eedeac495271d0f': {
         name: 'DAI',
         decimals: 18,
-        threshold: 1000,
     },
-    // USDC
     '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
         name: 'USDC',
         decimals: 6,
-        threshold: 1000,
     },
 };
 
@@ -34,9 +26,9 @@ export const currencies: Currency = {
  * to store the information here to decode the log.data.
  */
 export const markets: MarketType = {
-    // X2Y2
     '0x74312363e45dcaba76c59ec49a7aa8a65a67eed3': {
-        name: 'X2Y2 ⭕️',
+        name: 'X2Y2',
+        prettyName: 'X2Y2',
         site: 'https://x2y2.io/eth/',
         logDecoder: [
             {
@@ -57,9 +49,9 @@ export const markets: MarketType = {
             },
         ],
     },
-    // OpenSea Wyvern
     '0x7f268357a8c2552623316e2562d90e642bb538e5': {
-        name: 'OpenSea 🌊',
+        name: 'OpenSea (Wyvern)',
+        prettyName: 'OpenSea',
         site: 'https://opensea.io/assets/',
         logDecoder: [
             {
@@ -76,9 +68,9 @@ export const markets: MarketType = {
             },
         ],
     },
-    // LooksRareExchange
     '0x59728544b08ab483533076417fbbb2fd0b17ce3a': {
-        name: 'LooksRare 👀💎',
+        name: 'LooksRare',
+        prettyName: 'LooksRare',
         site: 'https://looksrare.org/collections/',
         logDecoder: [
             {
@@ -111,9 +103,9 @@ export const markets: MarketType = {
             },
         ],
     },
-    // Opensea - Seaport
     '0x00000000006c3852cbef3e08e8df289169ede581': {
-        name: 'Opensea ⚓️',
+        name: 'OpenSea (Seaport)',
+        prettyName: 'OpenSea',
         site: 'https://opensea.io/assets/',
         logDecoder: [
             {
@@ -176,12 +168,10 @@ export const markets: MarketType = {
     },
 };
 
+export const transferEventSignature =
+    '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
 
-export const transferEvents = [
-    '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef', // Transfer
-];
-
-export const saleEvents = [
+export const saleEventSignatures = [
     '0xc4109843e0b7d514e4c093114b863f8e7d8d9a458c372cd51bfe526b588006c9', // OrdersMatched (Opensea Wyvern)
     '0xe2c49856b032c255ae7e325d18109bc4e22a2804e2e49a017ec0f59f19cd447b', // EvProfit (X2Y2)
     '0x95fb6205e23ff6bda16a2d1dba56b9ad7c783f67c96fa149785052f47696f2be', // TakerBid (LooksRare)

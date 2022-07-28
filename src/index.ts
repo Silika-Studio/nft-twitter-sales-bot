@@ -3,26 +3,33 @@
 import { BigNumber, ethers } from 'ethers';
 import { ParamType } from 'ethers/lib/utils';
 import Twit, { Options as TwitOptions } from 'twit';
-import { currencies, markets, saleEvents, transferEvents } from './constants';
+import { currencies, markets, saleEventSignatures, transferEventSignature } from './constants';
 import { DecodedOSLogData } from './types';
 import { getSeaportSalePrice } from './utils';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-
-export async function monitorContract(contractAddress: string, abi: string, twitterConfig: TwitOptions, rpcString: string) {
+/**
+ * A function that will monitor a collection for all NFT sales,
+ * tweeting about each successful sale.
+ *
+ * @param contractAddress Contract address for the collection you which to monitor
+ * @param abi Contract ABI, as a string
+ * @param twitterConfig Config for the Twitter connection via the `twit` package
+ * @param rpcString String used to instantiate the RPC provider
+ */
+export const watchCollection = async (contractAddress: string, abi: string, twitterConfig: TwitOptions, rpcString: string) => {
     const provider = new ethers.providers.JsonRpcProvider(rpcString);
-
     const twitterClient = new Twit(twitterConfig);
-
-    // sometimes web3.js can return duplicate transactions in a split second, so
-    let lastTransactionHash: string;
-
     const contract = new ethers.Contract(contractAddress, abi, provider);
+
+    // Used for a safety check in case we get dupe Transfer events (can happen)
+    let lastTransactionHash: string;
 
     // https://docs.ethers.io/v5/api/contract/contract/#Contract-on
     // First 3 params map to the Transfer event's `address,address,uint256` type
     contract.on('Transfer', async (_from: string, _to: string, _id: BigNumber, data: any) => {
         const transactionHash = data.transactionHash.toLowerCase();
+        let tokens: string[] = [];
+        let totalPrice: number | undefined = undefined;
 
         console.log(data);
         console.log(_from);
@@ -36,71 +43,68 @@ export async function monitorContract(contractAddress: string, abi: string, twit
         lastTransactionHash = transactionHash;
 
         /*
-  This callback is called whenever there is a Transfer event on the token's contract.
-  When called, we don't yet have the context of how/why it was called. In order to see
-  if this was a sale, we have to get the context of the tx has a whole and look at the
-  `to` (to = marketplace, from = buyer/seller). In addition, in order to calculate the
-  price paid, we need to see the logs of the tx. This is why we need the receipt.
-*/
+        This callback is called whenever there is a Transfer event on the token's contract.
+        When called, we don't yet have the context of how/why it was called. In order to see
+        if this was a sale, we have to get the context of the tx has a whole and look at the
+        `to` (to = marketplace, from = buyer/seller). In addition, in order to calculate the
+        price paid, we need to see the logs of the tx. This is why we need the receipt.
+        */
         const receipt = await data.getTransactionReceipt();
         const recipient = receipt.to.toLowerCase();
 
         // not a marketplace transaction transfer, skip
-        if (!(Object.keys(markets).includes(recipient))) {
+        if (!(recipient in markets)) {
             return;
         }
-
         // retrieve market details
         const market = markets[recipient];
 
-        let tokens: string[] = [];
-        let totalPrice: number | undefined = undefined;
         // default to eth, `constants.ts` for other supported currencies
-        let currency = {
-            name: 'ETH',
-            decimals: 18,
-            threshold: 1,
-        };
-
-        for (const log of receipt.logs) {
+        let currencyAddress = '0x0000000000000000000000000000000000000000';
+        // Look for whether a non-ETH token was used
+        receipt.logs.forEach((log: any) => {
             const logAddress = log.address.toLowerCase();
-
-            // if paid for by non ETH token
             if (logAddress in currencies) {
-                currency = currencies[logAddress];
-            } else if (log.data == '0x' && transferEvents.includes(log.topics[0])) {
-                // As all parts of the Transfer event are topics, data will be empty ("0x")
+                currencyAddress = logAddress;
+            }
+        });
+        const currency = currencies[currencyAddress];
+
+        // Look for all transferred tokens
+        receipt.logs.forEach((log: any) => {
+            // First topic for events is the event signature
+            if (log.topics[0] === transferEventSignature) {
                 const tokenId = ethers.BigNumber.from(log.topics[3]).toString();
                 tokens.push(tokenId);
-            } else if (logAddress == recipient && saleEvents.includes(log.topics[0])) {
-                // transaction log as the event signature is one of our known sale events
-                /*
-                * ethers' `ParamType` type is really bad, hence the need to cast to `ParamType[]`.
-                * In essence, it has multiple mandatory attributes that are in fact optional
-                * (they even call them out as nullable in the comments above the attribute)
-                * Our decode type is a `Pick` of their `ParamType` with proper optional-ability
-                */
-                const decodedLogData = ethers.utils.defaultAbiCoder.decode(market.logDecoder as ParamType[], log.data);
+            }
+        });
 
-                if (market.name == 'Opensea ⚓️') {
-                    totalPrice = getSeaportSalePrice(decodedLogData as unknown as DecodedOSLogData, contractAddress);
-                } else if (market.name == 'X2Y2 ⭕️') {
-                    totalPrice = parseFloat(ethers.utils.formatUnits(
-                        decodedLogData.amount,
-                        currency.decimals,
-                    ));
-                } else {
-                    totalPrice = parseFloat(ethers.utils.formatUnits(
-                        decodedLogData.price,
-                        currency.decimals,
-                    ));
+        // Calculate price paid
+        receipt.logs.forEach((log: any) => {
+            const logAddress = log.address.toLowerCase();
+            if (logAddress == recipient && saleEventSignatures.includes(log.topics[0])) {
+
+                const decodedLogData = ethers.utils.defaultAbiCoder.decode(market.logDecoder as ParamType[], log.data) as unknown as DecodedOSLogData;
+
+                switch (market.name) {
+                    case 'OpenSea (Seaport)':
+                        totalPrice = getSeaportSalePrice(decodedLogData, contractAddress);
+                        break;
+                    case 'X2Y2':
+                        totalPrice = parseFloat(ethers.utils.formatUnits(
+                            decodedLogData.amount,
+                            currency.decimals,
+                        ));
+                        break;
+                    default:
+                        totalPrice = parseFloat(ethers.utils.formatUnits(
+                            decodedLogData.price,
+                            currency.decimals,
+                        ));
+
                 }
             }
-        }
-        if (!totalPrice) {
-            console.log('no price');
-            return;
-        }
+        });
 
         console.log(market.name);
         console.log(`${totalPrice} ${currency.name}`);
@@ -125,5 +129,5 @@ export async function monitorContract(contractAddress: string, abi: string, twit
         //   );
         // }
     });
-}
+};
 

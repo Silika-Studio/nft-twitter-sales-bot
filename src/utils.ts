@@ -57,7 +57,7 @@ function calcPriceReducer(previous: number, current: IndividualConsideration | I
  * @param contractAddress
  * @returns
  */
-export function getSeaportSalePrice(decodedLogData: DecodedOSLogData, contractAddress: string) {
+export const getSeaportSalePrice = (decodedLogData: DecodedOSLogData, contractAddress: string) => {
     const offer = decodedLogData.offer;
     const consideration = decodedLogData.consideration;
 
@@ -76,9 +76,9 @@ export function getSeaportSalePrice(decodedLogData: DecodedOSLogData, contractAd
 
         return parseFloat(totalOfferAmount.toFixed(5));
     }
-}
+};
 
-export async function getTokenData(tokenId: string, contractAddress: string, apiKey: string) {
+export const getTokenData = async (tokenId: string, contractAddress: string, apiKey: string) => {
     try {
         const assetName = await retry(
             async () => {
@@ -114,4 +114,4 @@ export async function getTokenData(tokenId: string, contractAddress: string, api
             console.error(error.message);
         }
     }
-}
+};
