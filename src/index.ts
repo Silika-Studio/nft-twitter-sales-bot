@@ -8,10 +8,9 @@ import { DecodedOSLogData } from './types';
 import { getSeaportSalePrice } from './utils';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-require('dotenv').config();
 
-export async function monitorContract(contractAddress: string, abi: string, twitterConfig: TwitOptions) {
-    const provider = new ethers.providers.JsonRpcProvider('https://eth-mainnet.g.alchemy.com/v2/' + process.env.ALCHEMY_API_KEY);
+export async function monitorContract(contractAddress: string, abi: string, twitterConfig: TwitOptions, rpcString: string) {
+    const provider = new ethers.providers.JsonRpcProvider(rpcString);
 
     const twitterClient = new Twit(twitterConfig);
 

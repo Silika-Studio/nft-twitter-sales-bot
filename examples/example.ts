@@ -9,4 +9,4 @@ monitorContract('0xf5b969064b91869fbf676ecabccd1c5563f591d0', JSON.stringify(abi
     consumer_secret: process.env.TWITTER_API_KEY_SECRET!,
     access_token: process.env.TWITTER_ACCESS_TOKEN!,
     access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET!,
-});
+}, 'https://eth-mainnet.g.alchemy.com/v2/' + process.env.ALCHEMY_API_KEY);
