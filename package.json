@@ -17,14 +17,14 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/dsgriffin/nft-sales-twitter-bot.git"
+        "url": "https://github.com/Silika-Studio/twitter-sales-bot"
     },
-    "author": "Daniel Griffin (@dsgriffin)",
-    "license": "ISC",
+    "author": "Silika Studio Inc",
+    "license": "MIT",
     "bugs": {
-        "url": "https://github.com/dsgriffin/nft-sales-twitter-bot/issues"
+        "url": "https://github.com/Silika-Studio/twitter-sales-bot/issues"
     },
-    "homepage": "https://github.com/dsgriffin/nft-sales-twitter-bot#readme",
+    "homepage": "https://github.com/Silika-Studio/twitter-sales-bot#readme",
     "dependencies": {
         "@alch/alchemy-web3": "^1.1.9",
         "@types/async-retry": "^1.4.4",
