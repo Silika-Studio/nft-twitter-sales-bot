@@ -59,7 +59,7 @@ export const watchCollection = async (contractAddress: string, abi: string, twit
         // retrieve market details
         const market = markets[recipient];
 
-        // default to eth, `constants.ts` for other supported currencies
+        // default to eth, see `constants.ts` for other supported currencies
         let currencyAddress = '0x0000000000000000000000000000000000000000';
         // Look for whether a non-ETH token was used
         receipt.logs.forEach((log: any) => {
@@ -72,7 +72,8 @@ export const watchCollection = async (contractAddress: string, abi: string, twit
 
         // Look for all transferred tokens
         receipt.logs.forEach((log: any) => {
-            // First topic for events is the event signature
+            // First topic for events is the event signature, the 4th is the ID
+            // Always true for all standard ERC-721 Transfer events
             if (log.topics[0] === transferEventSignature) {
                 const tokenId = ethers.BigNumber.from(log.topics[3]).toString();
                 tokens.push(tokenId);
