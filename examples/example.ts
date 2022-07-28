@@ -1,6 +1,7 @@
-import { monitorContract } from "../src/index";
-import abi from "./abi.json";
-// initate websocket connection
+import { monitorContract } from '../src/index';
+import abi from './abi.json';
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv').config();
 
 monitorContract('0xf5b969064b91869fbf676ecabccd1c5563f591d0', JSON.stringify(abi), {
