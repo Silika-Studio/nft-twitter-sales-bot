@@ -104,8 +104,7 @@ export const watchCollection = async (contractAddress: string, abi: string, rpcS
             }
         });
 
-        console.log(market.name);
-        console.log(`${totalPrice} ${currency.name}`);
+        console.log(`${totalPrice} ${currency.name} on ${market.name}`);
 
         // remove any dupes
         tokens = tokens.filter((t, i) => tokens.indexOf(t) === i);
