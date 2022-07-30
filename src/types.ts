@@ -107,4 +107,3 @@ export interface TweetConfig extends TwitterApiTokens {
      */
     includeImage?: boolean;
 }
-
