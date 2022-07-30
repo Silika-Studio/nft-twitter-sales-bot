@@ -111,7 +111,7 @@ export const watchCollection = async (contractAddress: string, abi: string, rpcS
         tokens = tokens.filter((t, i) => tokens.indexOf(t) === i);
 
         // retrieve metadata for the first (or only) ERC721 asset sold
-        const tokenData = await getTokenData(contract, tokens[0]);
+        const tokenData = await getTokenData(contract, tokens[0], twitterConfig?.includeImage);
 
         // If a callback was passed in, call it
         if (onSaleCallback) onSaleCallback(totalPrice, currency.name, tokens[0], contractAddress, tokenData.assetName);

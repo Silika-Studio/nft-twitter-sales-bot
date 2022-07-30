@@ -80,18 +80,20 @@ export const getSeaportSalePrice = (decodedLogData: DecodedOSLogData, contractAd
 };
 const OPENSEA_IPFS_GATEWAY = 'https://opensea.mypinata.cloud';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const getTokenData = async (contract: ethers.Contract, tokenId: string) => {
+export const getTokenData = async (contract: ethers.Contract, tokenId: string, includeImage?: boolean) => {
     try {
         const tokenURI = await contract.tokenURI(tokenId);
         console.log(tokenURI);
         const { image, name, image_url } = (await axios.get<{ name: string; image: string; image_url: string; }>(tokenURI)).data;
         const safeImageUrl = image ?? image_url;
         let httpImageUrl = '';
-        // If the token's image is an IPFS location, use OpenSea's public
-        if (safeImageUrl.includes('ipfs://'))
-            httpImageUrl = `${OPENSEA_IPFS_GATEWAY}/${safeImageUrl.replace('ipfs://', 'ipfs/')}`;
-        else
-            httpImageUrl = safeImageUrl;
+        if (includeImage) {
+            // If the token's image is an IPFS location, use OpenSea's public
+            if (safeImageUrl.includes('ipfs://'))
+                httpImageUrl = `${OPENSEA_IPFS_GATEWAY}/${safeImageUrl.replace('ipfs://', 'ipfs/')}`;
+            else
+                httpImageUrl = safeImageUrl;
+        }
         console.log({ assetName: name ?? tokenId, imageUrl: httpImageUrl });
 
         return { assetName: name ?? tokenId, imageUrl: httpImageUrl };
