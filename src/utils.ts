@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // external
-import retry from 'async-retry';
 import axios from 'axios';
 import { ethers } from 'ethers';
 import { currencies } from './constants';
@@ -77,41 +78,31 @@ export const getSeaportSalePrice = (decodedLogData: DecodedOSLogData, contractAd
         return parseFloat(totalOfferAmount.toFixed(5));
     }
 };
-
-export const getTokenData = async (tokenId: string, contractAddress: string, apiKey: string) => {
+const OPENSEA_IPFS_GATEWAY = 'https://opensea.mypinata.cloud';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const getTokenData = async (contract: ethers.Contract, tokenId: string) => {
     try {
-        const assetName = await retry(
-            async () => {
-                // retrieve metadata for asset from opensea
-                const response = await axios.get(
-                    `https://api.opensea.io/api/v1/asset/${contractAddress}/${tokenId}`,
-                    {
-                        headers: {
-                            'X-API-KEY': apiKey,
-                        },
-                    },
-                );
+        const tokenURI = await contract.tokenURI(tokenId);
+        console.log(tokenURI);
+        const { image, name, image_url } = (await axios.get<{ name: string; image: string; image_url: string; }>(tokenURI)).data;
+        const safeImageUrl = image ?? image_url;
+        let httpImageUrl = '';
+        // If the token's image is an IPFS location, use OpenSea's public
+        if (safeImageUrl.includes('ipfs://'))
+            httpImageUrl = `${OPENSEA_IPFS_GATEWAY}/${safeImageUrl.replace('ipfs://', 'ipfs/')}`;
+        else
+            httpImageUrl = safeImageUrl;
+        console.log({ assetName: name ?? tokenId, imageUrl: httpImageUrl });
 
-                const data = response.data;
-
-                // just the asset name for now, but retrieve whatever you need
-                return {
-                    assetName: data.name,
-                };
-            },
-            {
-                retries: 5,
-            },
-        );
-
-        return assetName;
+        return { assetName: name ?? tokenId, imageUrl: httpImageUrl };
     } catch (error: any) {
-        console.log('There was an error in getting NFT data from OS!');
+        console.log('There was an error in resolving the tokenURI!');
         if (error.response) {
             console.log(error.response.data);
             console.log(error.response.status);
         } else {
             console.error(error.message);
         }
+        return { assetName: tokenId, imageUrl: '' };
     }
 };

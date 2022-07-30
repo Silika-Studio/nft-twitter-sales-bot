@@ -1,4 +1,5 @@
 import { ParamType } from 'ethers/lib/utils';
+import { TwitterApiTokens } from 'twitter-api-v2';
 
 // ------------ OS log types ------------
 /**
@@ -62,6 +63,9 @@ export type CurrencyRecord = Record<string, Currency>;
 type BaseDecodeParamType = Pick<ParamType, 'type' | 'name'>;
 type DecodeParamType = BaseDecodeParamType & { components?: BaseDecodeParamType[]; };
 
+/**
+ * Human-readable name for supported marketplace contracts
+ */
 type MarketName = 'OpenSea (Wyvern)' | 'OpenSea (Seaport)' | 'X2Y2' | 'LooksRare';
 
 export interface Market {
@@ -71,16 +75,36 @@ export interface Market {
     name: MarketName;
     /**
      * String used when tweeting
-     * eg: Seaport and Wyvern have different names, but we'll tweet "OpenSea" for both
+     * eg: Seaport and Wyvern have different "name"s, but we'll tweet "OpenSea" for both
      */
     prettyName: string;
     /**
      * URL to marketplace
      */
-    site: string;
+    marketplaceUrl: string;
     /**
      * Known schema used to decode this marketplace's logs
      */
     logDecoder: DecodeParamType[];
 }
 export type MarketType = Record<string, Market>;
+
+/**
+ * All the information required to have the bot tweet for you.
+ */
+export interface TweetConfig extends TwitterApiTokens {
+    /**
+     * String format for a single NFT sale
+     */
+    tweetTemplateSingle: string;
+    /**
+     * String format for multiple NFT sales within the one tx
+     */
+    tweetTemplateMulti: string;
+
+    /**
+     * Whether to include the image of the first NFT in the tweet
+     */
+    includeImage?: boolean;
+}
+

@@ -29,7 +29,7 @@ export const markets: MarketType = {
     '0x74312363e45dcaba76c59ec49a7aa8a65a67eed3': {
         name: 'X2Y2',
         prettyName: 'X2Y2',
-        site: 'https://x2y2.io/eth/',
+        marketplaceUrl: 'https://x2y2.io/eth/',
         logDecoder: [
             {
                 type: 'bytes32',
@@ -52,7 +52,7 @@ export const markets: MarketType = {
     '0x7f268357a8c2552623316e2562d90e642bb538e5': {
         name: 'OpenSea (Wyvern)',
         prettyName: 'OpenSea',
-        site: 'https://opensea.io/assets/',
+        marketplaceUrl: 'https://opensea.io/assets/',
         logDecoder: [
             {
                 type: 'bytes32',
@@ -71,7 +71,7 @@ export const markets: MarketType = {
     '0x59728544b08ab483533076417fbbb2fd0b17ce3a': {
         name: 'LooksRare',
         prettyName: 'LooksRare',
-        site: 'https://looksrare.org/collections/',
+        marketplaceUrl: 'https://looksrare.org/collections/',
         logDecoder: [
             {
                 type: 'bytes32',
@@ -106,7 +106,7 @@ export const markets: MarketType = {
     '0x00000000006c3852cbef3e08e8df289169ede581': {
         name: 'OpenSea (Seaport)',
         prettyName: 'OpenSea',
-        site: 'https://opensea.io/assets/',
+        marketplaceUrl: 'https://opensea.io/assets/',
         logDecoder: [
             {
                 type: 'bytes32',

@@ -2,10 +2,11 @@
 // Will remove above before publishing
 import { BigNumber, ethers } from 'ethers';
 import { ParamType } from 'ethers/lib/utils';
-import Twit, { Options as TwitOptions } from 'twit';
+import { TwitterApi } from 'twitter-api-v2';
 import { currencies, markets, saleEventSignatures, transferEventSignature } from './constants';
-import { DecodedOSLogData } from './types';
-import { getSeaportSalePrice } from './utils';
+import { tweet } from './tweet';
+import { DecodedOSLogData, TweetConfig } from './types';
+import { getSeaportSalePrice, getTokenData } from './utils';
 
 /**
  * A function that will monitor a collection for all NFT sales,
@@ -13,27 +14,24 @@ import { getSeaportSalePrice } from './utils';
  *
  * @param contractAddress Contract address for the collection you which to monitor
  * @param abi Contract ABI, as a string
- * @param twitterConfig Config for the Twitter connection via the `twit` package
  * @param rpcString String used to instantiate the RPC provider
+ * @param twitterConfig Config for the Twitter connection. If undefined, the bot won't tweet anything.
+ * @param onSaleCallback Optional callback which will be called with all the sale data upon every sale.
  */
-export const watchCollection = async (contractAddress: string, abi: string, twitterConfig: TwitOptions, rpcString: string) => {
+export const watchCollection = async (contractAddress: string, abi: string, rpcString: string, twitterConfig?: TweetConfig, onSaleCallback?: (price: number, currencyName: string, id: string, contractAddress: string, name: string) => void) => {
     const provider = new ethers.providers.JsonRpcProvider(rpcString);
-    const twitterClient = new Twit(twitterConfig);
+    const twitterClient = twitterConfig && new TwitterApi(twitterConfig);
     const contract = new ethers.Contract(contractAddress, abi, provider);
 
     // Used for a safety check in case we get dupe Transfer events (can happen)
     let lastTransactionHash: string;
 
     // https://docs.ethers.io/v5/api/contract/contract/#Contract-on
-    // First 3 params map to the Transfer event's `address,address,uint256` type
+    // First 3 params map to the Transfer event's `address,address,uint256` arguments
     contract.on('Transfer', async (_from: string, _to: string, _id: BigNumber, data: any) => {
         const transactionHash = data.transactionHash.toLowerCase();
         let tokens: string[] = [];
-        let totalPrice: number | undefined = undefined;
-
-        console.log(data);
-        console.log(_from);
-        console.log(_to);
+        let totalPrice = -1;
 
         // duplicate transaction - skip process
         if (transactionHash == lastTransactionHash) {
@@ -45,9 +43,9 @@ export const watchCollection = async (contractAddress: string, abi: string, twit
         /*
         This callback is called whenever there is a Transfer event on the token's contract.
         When called, we don't yet have the context of how/why it was called. In order to see
-        if this was a sale, we have to get the context of the tx has a whole and look at the
+        if this was a sale, we have to get the context of the tx as a whole and look at the
         `to` (to = marketplace, from = buyer/seller). In addition, in order to calculate the
-        price paid, we need to see the logs of the tx. This is why we need the receipt.
+        price paid, we need to see the logs of the tx, stored in the tx receipt.
         */
         const receipt = await data.getTransactionReceipt();
         const recipient = receipt.to.toLowerCase();
@@ -73,8 +71,9 @@ export const watchCollection = async (contractAddress: string, abi: string, twit
         // Look for all transferred tokens
         receipt.logs.forEach((log: any) => {
             // First topic for events is the event signature, the 4th is the ID
-            // Always true for all standard ERC-721 Transfer events
-            if (log.topics[0] === transferEventSignature) {
+            // Always true for all standard ERC-721 Transfer events.
+            // The Transfer event has 3 args, all indexed, so we know `data` is empty
+            if (log.data === '0x' && log.topics[0] === transferEventSignature) {
                 const tokenId = ethers.BigNumber.from(log.topics[3]).toString();
                 tokens.push(tokenId);
             }
@@ -86,7 +85,6 @@ export const watchCollection = async (contractAddress: string, abi: string, twit
             if (logAddress == recipient && saleEventSignatures.includes(log.topics[0])) {
 
                 const decodedLogData = ethers.utils.defaultAbiCoder.decode(market.logDecoder as ParamType[], log.data) as unknown as DecodedOSLogData;
-
                 switch (market.name) {
                     case 'OpenSea (Seaport)':
                         totalPrice = getSeaportSalePrice(decodedLogData, contractAddress);
@@ -102,7 +100,6 @@ export const watchCollection = async (contractAddress: string, abi: string, twit
                             decodedLogData.price,
                             currency.decimals,
                         ));
-
                 }
             }
         });
@@ -114,21 +111,25 @@ export const watchCollection = async (contractAddress: string, abi: string, twit
         tokens = tokens.filter((t, i) => tokens.indexOf(t) === i);
 
         // retrieve metadata for the first (or only) ERC721 asset sold
-        // const tokenData = await getTokenData(tokens[0]);
-        // if more than one asset sold, link directly to etherscan tx, otherwise the marketplace item
-        // if (tokens.length > 1) {
-        //   tweet(
-        //     twitterClient,
-        //     `& other assets bought for ${totalPrice} ${currency.name} on ${market.name
-        //     } https://etherscan.io/tx/${transactionHash}`
-        //   );
-        // } else {
-        //   tweet(
-        //     twitterClient,
-        //     `$ bought for ${totalPrice} ${currency.name} on ${market.name} ${market.site
-        //     }${process.env.CONTRACT_ADDRESS}/${tokens[0]}`
-        //   );
-        // }
+        const tokenData = await getTokenData(contract, tokens[0]);
+
+        // If a callback was passed in, call it
+        if (onSaleCallback) onSaleCallback(totalPrice, currency.name, tokens[0], contractAddress, tokenData.assetName);
+
+        if (twitterClient) {
+            const args = [
+                twitterClient,
+                tokens.length === 1 ? twitterConfig.tweetTemplateSingle : twitterConfig.tweetTemplateMulti,
+                tokenData.assetName,
+                `${totalPrice} ${currency.name}`,
+                market.prettyName,
+                transactionHash,
+                tokens.length,
+                twitterConfig.includeImage && tokenData.imageUrl ? tokenData.imageUrl : undefined,
+            ] as const; // Necessary such that `args` is a tuple when spread to the `tweet` method
+
+            tweet(...args);
+        }
     });
 };
 
