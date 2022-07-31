@@ -70,23 +70,25 @@ type DecodeParamType =
 /**
  * Human-readable name for supported marketplace contracts
  */
-type MarketName =
+type MarketId =
     'OpenSea (Wyvern)' |
     'OpenSea (Seaport)' |
     'X2Y2' |
     'LooksRare';
 
+export type MarketName = 'OpenSea' | 'X2Y2' | 'LooksRare';
+
 export interface Market {
     /**
      * ID of the market
      */
-    name: MarketName;
+    id: MarketId;
     /**
      * String used when tweeting
-     * eg: Seaport and Wyvern have different "name"s,
+     * eg: Seaport and Wyvern are different,
      * but we tweet "OpenSea" for both
      */
-    prettyName: string;
+    name: MarketName;
     /**
      * URL to marketplace
      */
@@ -120,10 +122,12 @@ export interface TweetConfig extends TwitterApiTokens {
 export interface TokenData {
     assetName: string;
     imageUrl: string;
+    id: string;
 }
 
 export interface TokenUriResponse {
     name: string;
     image: string;
+    id: string;
     image_url: string;
 }

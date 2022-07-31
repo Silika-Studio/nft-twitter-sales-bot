@@ -10,7 +10,7 @@ const twitterConfig: TweetConfig = {
     appSecret: process.env.TWITTER_API_KEY_SECRET!,
     accessToken: process.env.TWITTER_ACCESS_TOKEN!,
     accessSecret: process.env.TWITTER_ACCESS_TOKEN_SECRET!,
-    tweetTemplateSingle: '$$NAME$$ bought for $$PRICE$$ on $$MARKETPLACE_NAME$$ - https://etherscan.io/tx/$$TRANSACTION_HASH$$',
+    tweetTemplateSingle: '$$NAME$$ bought for $$PRICE$$ on $$MARKETPLACE_NAME$$:\n$$MARKETPLACE_LINK$$\n https://etherscan.io/tx/$$TRANSACTION_HASH$$',
     tweetTemplateMulti: '$$NUM_SOLD$$ Good Minds bought for $$PRICE$$ on $$MARKETPLACE_NAME$$ - https://etherscan.io/tx/$$TRANSACTION_HASH$$',
     includeImage: true,
 };

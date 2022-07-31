@@ -129,7 +129,11 @@ export const getTokenData = async (
 
         console.log({ assetName: name ?? tokenId, imageUrl: httpImageUrl });
 
-        return { assetName: name ?? tokenId, imageUrl: httpImageUrl };
+        return {
+            assetName: name ?? tokenId,
+            imageUrl: httpImageUrl,
+            id: tokenId,
+        };
     } catch (error: any) {
         console.log('There was an error in resolving the tokenURI!');
         if (error.response) {
@@ -138,6 +142,6 @@ export const getTokenData = async (
         } else {
             console.error(error.message);
         }
-        return { assetName: tokenId, imageUrl: '' };
+        return { assetName: tokenId, imageUrl: '', id: tokenId };
     }
 };

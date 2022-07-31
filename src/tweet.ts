@@ -2,15 +2,53 @@
 import axios from 'axios';
 import sharp from 'sharp';
 import { SendTweetV2Params, TwitterApi } from 'twitter-api-v2';
-import { TokenData } from './types';
+import { MarketName, TokenData } from './types';
 
 /**
- * Takes a template string and replaces the template variables with the correct data
+ * Get the specific marketplace link to the sold asset
  */
-const fillTweetTemplate = (tweetTemplate: string, assetName: string, price: string, marketplaceName: string, txHash: string, numSold: number) =>
+const getMarketplaceLink = (
+    marketName: MarketName,
+    tokenId: string,
+    contractAddress: string,
+) => {
+    let url = '';
+    switch (marketName) {
+        case 'OpenSea':
+            url = `https://opensea.io/${contractAddress}/${tokenId}`;
+            break;
+        case 'LooksRare':
+            url =
+                `https://looksrare.org/collections/${contractAddress
+                }/${tokenId}`;
+            break;
+        case 'X2Y2':
+            url =
+                `https://x2y2.io/eth/${contractAddress}/${tokenId}`;
+            break;
+    }
+    return url;
+
+};
+/**
+ * Takes a template string and replaces the template variables with the
+ correct data
+ */
+const fillTweetTemplate = (
+    tweetTemplate: string,
+    assetName: string,
+    price: string,
+    marketName: MarketName,
+    txHash: string,
+    numSold: number,
+    id: string,
+    contractAddress: string,
+) =>
     tweetTemplate.replace('$$NAME$$', assetName)
         .replace('$$PRICE$$', price)
-        .replace('$$MARKETPLACE_NAME$$', marketplaceName)
+        .replace('$$MARKETPLACE_NAME$$', marketName)
+        .replace('$$MARKETPLACE_LINK$$',
+            getMarketplaceLink(marketName, id, contractAddress))
         .replace('$$TRANSACTION_HASH$$', txHash)
         .replace('$$NUM_SOLD$$', numSold.toString());
 
@@ -33,9 +71,10 @@ export const tweet = async (
     tweetTemplate: string,
     tokenData: TokenData[],
     price: string,
-    marketplaceName: string,
+    marketplaceName: MarketName,
     txHash: string,
     numSold: number,
+    contractAddress: string,
     showImages: boolean,
 ) => {
     const mediaIds: { id: string, name: string; }[] = [];
@@ -44,6 +83,7 @@ export const tweet = async (
     if (showImages) {
         await Promise.all(tokenData.map(async (token) => {
             const { imageUrl } = token;
+            if (!imageUrl) return;
             try {
                 // Retrieve the image, resize and convert to webp.
                 // Twitter has a 5.2 mb byte limit to uploaded images
@@ -94,7 +134,10 @@ export const tweet = async (
             price,
             marketplaceName,
             txHash,
-            numSold), options);
+            numSold,
+            tokenData[0].id,
+            contractAddress,
+        ), options);
         console.log('✅ Successfully sent the following tweet:');
         console.log(res);
     } catch (e: any) {

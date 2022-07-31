@@ -27,8 +27,8 @@ export const currencies: Currencies = {
  */
 export const markets: Markets = {
     '0x74312363e45dcaba76c59ec49a7aa8a65a67eed3': {
+        id: 'X2Y2',
         name: 'X2Y2',
-        prettyName: 'X2Y2',
         marketplaceUrl: 'https://x2y2.io/eth/',
         logDecoder: [
             {
@@ -50,8 +50,8 @@ export const markets: Markets = {
         ],
     },
     '0x7f268357a8c2552623316e2562d90e642bb538e5': {
-        name: 'OpenSea (Wyvern)',
-        prettyName: 'OpenSea',
+        id: 'OpenSea (Wyvern)',
+        name: 'OpenSea',
         marketplaceUrl: 'https://opensea.io/assets/',
         logDecoder: [
             {
@@ -69,8 +69,8 @@ export const markets: Markets = {
         ],
     },
     '0x59728544b08ab483533076417fbbb2fd0b17ce3a': {
+        id: 'LooksRare',
         name: 'LooksRare',
-        prettyName: 'LooksRare',
         marketplaceUrl: 'https://looksrare.org/collections/',
         logDecoder: [
             {
@@ -104,8 +104,8 @@ export const markets: Markets = {
         ],
     },
     '0x00000000006c3852cbef3e08e8df289169ede581': {
-        name: 'OpenSea (Seaport)',
-        prettyName: 'OpenSea',
+        id: 'OpenSea (Seaport)',
+        name: 'OpenSea',
         marketplaceUrl: 'https://opensea.io/assets/',
         logDecoder: [
             {

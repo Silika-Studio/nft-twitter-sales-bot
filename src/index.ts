@@ -79,7 +79,7 @@ export const watchCollection = async (
         async (_from: string, _to: string, _id: BigNumber, data: any) => {
             const transactionHash = data.transactionHash.toLowerCase();
             let tokens: string[] = [];
-            let totalPrice = -1;
+            let totalPrice = 0;
 
             // duplicate transaction - skip process
             if (transactionHash == lastTransactionHash) {
@@ -145,22 +145,22 @@ export const watchCollection = async (
                             market.logDecoder as ParamType[]
                             , log.data,
                         ) as unknown as DecodedOSLogData;
-                    switch (market.name) {
+                    switch (market.id) {
                         case 'OpenSea (Seaport)':
-                            totalPrice =
+                            totalPrice +=
                                 getSeaportSalePrice(
                                     decodedLogData,
                                     contractAddress,
                                 );
                             break;
                         case 'X2Y2':
-                            totalPrice = parseFloat(ethers.utils.formatUnits(
+                            totalPrice += parseFloat(ethers.utils.formatUnits(
                                 decodedLogData.amount,
                                 currency.decimals,
                             ));
                             break;
                         default:
-                            totalPrice = parseFloat(ethers.utils.formatUnits(
+                            totalPrice += parseFloat(ethers.utils.formatUnits(
                                 decodedLogData.price,
                                 currency.decimals,
                             ));
@@ -168,7 +168,7 @@ export const watchCollection = async (
                 }
             });
 
-            console.log(`${totalPrice} ${currency.name} on ${market.name}`);
+            console.log(`${totalPrice} ${currency.name} on ${market.id}`);
 
             // remove any dupes
             tokens = tokens.filter((t, i) => tokens.indexOf(t) === i);
@@ -198,9 +198,10 @@ export const watchCollection = async (
                         twitterConfig.tweetTemplateMulti,
                     tokenData,
                     `${totalPrice} ${currency.name}`,
-                    market.prettyName,
+                    market.name,
                     transactionHash,
                     tokens.length,
+                    contractAddress,
                     !!twitterConfig.includeImage,
                 ] as const; // Necessary such that
                 // `args` is a tuple when spread to the `tweet` method
