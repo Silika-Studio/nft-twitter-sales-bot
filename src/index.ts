@@ -176,7 +176,7 @@ export const watchCollection = async (
             // retrieve metadata for the first (or only) ERC721 asset sold
             const tokenData = await Promise.all(
                 tokens.slice(0, 4).map(token =>
-                    getTokenData(contract, token, twitterConfig?.includeImage),
+                    getTokenData(contract, token),
                 ),
             );
 
