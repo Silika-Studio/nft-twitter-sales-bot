@@ -2,3 +2,4 @@ node_modules/
 .env
 .DS_store
 test-files/
+lib/

@@ -8,14 +8,15 @@ import { TwitterApiTokens } from 'twitter-api-v2';
  * For more information on this type, look at the non-indexed args
  * of Seaport's `OrderFulfilled` event, as those are what is included
  * as data
- * https://etherscan.io/address/0x00000000006c3852cbef3e08e8df289169ede581#code
+ * @link https://etherscan.io/address/0x00000000006c3852cbef3e08e8df289169ede581#code
  */
-export type OfferAndConsiderationBase = [string, string, string, string, string] & {
-    itemType: string;
-    token: string;
-    identifier: string;
-    amount: string;
-};
+export type OfferAndConsiderationBase =
+    [string, string, string, string, string] & {
+        itemType: string;
+        token: string;
+        identifier: string;
+        amount: string;
+    };
 
 export type IndividualOffer = OfferAndConsiderationBase;
 /**
@@ -25,6 +26,7 @@ export type Offer = IndividualOffer[];
 
 export type IndividualConsideration = [...OfferAndConsiderationBase,
 ] & { recipient: string; };
+
 /**
  * Decoded log type for the seller of the NFT
  */
@@ -37,7 +39,8 @@ export type Consideration = IndividualConsideration[];
  *
  * If accepting an offer, it's reversed
  */
-export type DecodedOSLogData = Record<string, string> & { consideration: Consideration; offer: Offer; };
+export type DecodedOSLogData =
+    Record<string, string> & { consideration: Consideration; offer: Offer; };
 
 // ------------ end ------------
 
@@ -52,21 +55,26 @@ export interface Currency {
     decimals: number;
 }
 
-export type CurrencyRecord = Record<string, Currency>;
+export type Currencies = Record<string, Currency>;
 
 /**
- * ethers' `ParamType` type is quite bad, hence the need to cast to `ParamType[]`.
+ * ethers' `ParamType` type is quite bad.
  * In essence, it has multiple mandatory attributes that are in fact optional
  * (they even call them out as nullable in the comments above the attribute)
  * Our decode type is a `Pick` of their `ParamType` with proper optional-ability
  */
 type BaseDecodeParamType = Pick<ParamType, 'type' | 'name'>;
-type DecodeParamType = BaseDecodeParamType & { components?: BaseDecodeParamType[]; };
+type DecodeParamType =
+    BaseDecodeParamType & { components?: BaseDecodeParamType[]; };
 
 /**
  * Human-readable name for supported marketplace contracts
  */
-type MarketName = 'OpenSea (Wyvern)' | 'OpenSea (Seaport)' | 'X2Y2' | 'LooksRare';
+type MarketName =
+    'OpenSea (Wyvern)' |
+    'OpenSea (Seaport)' |
+    'X2Y2' |
+    'LooksRare';
 
 export interface Market {
     /**
@@ -75,7 +83,8 @@ export interface Market {
     name: MarketName;
     /**
      * String used when tweeting
-     * eg: Seaport and Wyvern have different "name"s, but we'll tweet "OpenSea" for both
+     * eg: Seaport and Wyvern have different "name"s,
+     * but we tweet "OpenSea" for both
      */
     prettyName: string;
     /**
@@ -87,7 +96,7 @@ export interface Market {
      */
     logDecoder: DecodeParamType[];
 }
-export type MarketType = Record<string, Market>;
+export type Markets = Record<string, Market>;
 
 /**
  * All the information required to have the bot tweet for you.
@@ -106,4 +115,15 @@ export interface TweetConfig extends TwitterApiTokens {
      * Whether to include the image of the first NFT in the tweet
      */
     includeImage?: boolean;
+}
+
+export interface TokenData {
+    assetName: string;
+    imageUrl: string;
+}
+
+export interface TokenUriResponse {
+    name: string;
+    image: string;
+    image_url: string;
 }

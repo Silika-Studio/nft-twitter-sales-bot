@@ -1,46 +1,48 @@
 {
-  "parser": "@typescript-eslint/parser",
-  "parserOptions": {
-    "project": "tsconfig.eslint.json"
-  },
-  "env": {
-    "browser": true,
-    "es2021": true
-  },
-  "plugins": [
-    "@typescript-eslint"
-  ],
-  "extends": [
-    "eslint:recommended",
-    "plugin:@typescript-eslint/eslint-recommended",
-    "plugin:@typescript-eslint/recommended",
-    "airbnb-typescript"
-  ],
-  "rules": {
-    "@typescript-eslint/no-unused-vars": "error",
-    "semi": "off",
-    "@typescript-eslint/semi": "error",
-    "no-console": "off",
-    "no-empty": "off",
-    "import/no-extraneous-dependencies": "off",
-    "import/extensions": "off",
-    "@typescript-eslint/indent": [
-      "error",
-      4
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "project": "tsconfig.eslint.json"
+    },
+    "env": {
+        "browser": true,
+        "es2021": true
+    },
+    "plugins": [
+        "@typescript-eslint"
     ],
-    "@typescript-eslint/no-loop-func": "off",
-    "no-multiple-empty-lines": [
-      "error",
-      {
-        "max": 1
-      }
+    "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/eslint-recommended",
+        "plugin:@typescript-eslint/recommended",
+        "airbnb-typescript"
     ],
-    "@typescript-eslint/type-annotation-spacing": "error",
-    "react/jsx-filename-extension": "off",
-    "eol-last": [
-      1,
-      "unix"
-    ],
-    "key-spacing": "error"
-  }
+    "rules": {
+        "@typescript-eslint/no-unused-vars": "error",
+        "semi": "off",
+        "@typescript-eslint/semi": "error",
+        "no-console": "off",
+        "no-empty": "off",
+        "import/no-extraneous-dependencies": "off",
+        "import/extensions": "off",
+        "@typescript-eslint/indent": [
+            "error",
+            4
+        ],
+        "@typescript-eslint/no-loop-func": "off",
+        "no-multiple-empty-lines": [
+            "error",
+            {
+                "max": 1
+            }
+        ],
+        "@typescript-eslint/type-annotation-spacing": "error",
+        "react/jsx-filename-extension": "off",
+        "eol-last": [
+            1,
+            "unix"
+        ],
+        "key-spacing": "error",
+        "max-len": "warn",
+        "@typescript-eslint/comma-dangle": "warn"
+    }
 }
