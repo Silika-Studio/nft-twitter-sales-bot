@@ -168,6 +168,7 @@ export const watchCollection = async (
                 }
             });
 
+            totalPrice = parseFloat(totalPrice.toFixed(4));
             console.log(`${totalPrice} ${currency.name} on ${market.id}`);
 
             // remove any dupes

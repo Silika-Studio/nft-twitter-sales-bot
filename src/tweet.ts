@@ -15,16 +15,17 @@ const getMarketplaceLink = (
     let url = '';
     switch (marketName) {
         case 'OpenSea':
-            url = `https://opensea.io/assets/ethereum/${contractAddress}
-            /${tokenId}`;
+            // eslint-disable-next-line max-len
+            url = `https://opensea.io/assets/ethereum/${contractAddress}/${tokenId}`;
             break;
         case 'LooksRare':
             url =
-                `https://looksrare.org/collections/${contractAddress
-                }/${tokenId}`;
+                // eslint-disable-next-line max-len
+                `https://looksrare.org/collections/${contractAddress}/${tokenId}`;
             break;
         case 'X2Y2':
             url =
+                // eslint-disable-next-line max-len
                 `https://x2y2.io/eth/${contractAddress}/${tokenId}`;
             break;
     }
