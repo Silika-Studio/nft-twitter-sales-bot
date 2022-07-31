@@ -15,7 +15,8 @@ const getMarketplaceLink = (
     let url = '';
     switch (marketName) {
         case 'OpenSea':
-            url = `https://opensea.io/${contractAddress}/${tokenId}`;
+            url = `https://opensea.io/assets/ethereum/${contractAddress}
+            /${tokenId}`;
             break;
         case 'LooksRare':
             url =
