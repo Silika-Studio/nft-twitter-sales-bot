@@ -59,7 +59,7 @@ The templates accept the following keywords, which will be replaced with the tra
 
 - `$$MARKETPLACE_NAME$$`: The name of the marketplace, eg: OpenSea, LooksRare, or X2Y2.
 
-- `$$MARKETPLACE_NAME$$`: The link to the sold asset.
+- `$$MARKETPLACE_LINK$$`: The link to the sold asset.
 
 - `$$TRANSACTION_HASH$$`: The transaction hash for the sale, most likely used as follows: `'transaction link: https://etherscan.io/tx/$$TRANSACTION_HASH$$`'
 
