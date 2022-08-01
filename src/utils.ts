@@ -103,6 +103,12 @@ export const getSeaportSalePrice = (
     }
 };
 
+const ipfsLocationToHttpsGateway = (ipfsLoc: string) =>
+    ipfsLoc.includes('ipfs://') ?
+        `${OPENSEA_IPFS_GATEWAY}/${ipfsLoc
+            .replace('ipfs://', 'ipfs/')}` :
+        ipfsLoc;
+
 /**
  * Get the asset's name and image url by calling the contract's `tokenURI`
  * and resolving it. If IPFS, use OpenSea's gateway
@@ -117,15 +123,14 @@ export const getTokenData = async (
 ): Promise<TokenData> => {
     try {
         const tokenURI = await contract.tokenURI(tokenId);
-        console.log(tokenURI);
         const { image, name, image_url } =
-            (await axios.get<TokenUriResponse>(tokenURI)
-            ).data;
+            (await axios.get<TokenUriResponse>(
+                ipfsLocationToHttpsGateway(tokenURI),
+            )).data;
+        console.log(tokenURI);
+        console.log(image_url);
         const safeImageUrl = image ?? image_url;
-        const httpImageUrl = safeImageUrl.includes('ipfs://') ?
-            `${OPENSEA_IPFS_GATEWAY}/${safeImageUrl
-                .replace('ipfs://', 'ipfs/')}` :
-            safeImageUrl;
+        const httpImageUrl = ipfsLocationToHttpsGateway(safeImageUrl);
 
         console.log({ assetName: name ?? tokenId, imageUrl: httpImageUrl });
 
