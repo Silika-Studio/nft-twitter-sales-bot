@@ -1,11 +1,17 @@
 {
-    "version": "1.0.1",
+    "version": "1.0.2",
     "name": "@silikastudio/nft-twitter-sales-bot",
     "description": "",
     "publishConfig": {
         "access": "public",
         "registry": "https://registry.npmjs.org/"
     },
+    "keywords": [
+        "nft",
+        "twitter",
+        "bot",
+        "ethereum"
+    ],
     "main": "lib/index.js",
     "files": [
         "lib"
