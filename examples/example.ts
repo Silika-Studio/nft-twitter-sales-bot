@@ -16,7 +16,6 @@ const twitterConfig: TweetConfig = {
 };
 
 watchCollection('0x2a459947f0ac25ec28c197f09c2d88058a83f3bb', JSON.stringify(abi),
-    // 'https://eth-mainnet.g.alchemy.com/v2/' + process.env.ALCHEMY_API_KEY,
     'alchemy',
     process.env.ALCHEMY_API_KEY!,
     twitterConfig,
