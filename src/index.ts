@@ -212,3 +212,4 @@ export const watchCollection = async (
         });
 };
 
+export * from './types';
