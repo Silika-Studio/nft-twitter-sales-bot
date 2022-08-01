@@ -17,7 +17,7 @@
         "clean": "rimraf ./lib",
         "example": "cd examples && npx ts-node example.ts",
         "lint": "eslint . --ext .ts",
-        "test": "jest"
+        "test": "jest --passWithNoTests"
     },
     "repository": {
         "type": "git",
