@@ -1,7 +1,7 @@
 {
-    "version": "1.0.3",
+    "version": "1.0.4",
     "name": "@silikastudio/nft-twitter-sales-bot",
-    "description": "",
+    "description": "An open-source TypeScript package for posting sales of an NFT collection to twitter.",
     "publishConfig": {
         "access": "public",
         "registry": "https://registry.npmjs.org/"
