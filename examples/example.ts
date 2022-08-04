@@ -1,9 +1,9 @@
+import { config } from "dotenv";
 import { watchCollection } from '../src/index';
 import { TweetConfig } from '../src/types';
 import abi from './abi.json';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-require('dotenv').config();
+config();
 
 const twitterConfig: TweetConfig = {
     appKey: process.env.TWITTER_API_KEY!,

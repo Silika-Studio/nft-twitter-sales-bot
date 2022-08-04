@@ -17,7 +17,7 @@ It currently supports the following marketplaces:
 
 - X2Y2
 
-and the following currencies:
+the following currencies:
 
 - ETH
 
@@ -27,7 +27,16 @@ and the following currencies:
 
 - DAI
 
-# Getting started
+and the following RPC providers:
+
+- Alchemy
+
+- Etherscan
+
+- Infura
+
+# Quick start
+For TypeScript veterans/
 
 1. Install the package via NPM
 ```
@@ -40,8 +49,37 @@ import { watchCollection } from '@silikastudio/nft-twitter-sales-bot';
 
 watchCollection(args);
 ```
+*Note: See the JSDoc comments above `watchCollection` in `/src/index.ts` for up-to-date explanations of all the arguments accepted*
 
 3. Sit back and relax :)
+
+# In-depth start
+
+1. [Install NodeJS](https://nodejs.org/en/download/)
+    - This is necessary to run JavaScript programs
+1. [Install yarn](https://yarnpkg.com/getting-started/install)
+    - Skip if you with to use `npm` instead
+1. [Create a new TypeScript app](https://code.visualstudio.com/docs/typescript/typescript-tutorial)
+1. Install this package in your TypeScript app
+
+```
+yarn add @silikastudio/nft-twitter-sales-bot
+```
+or
+```
+npm -i @silikastudio/nft-twitter-sales-bot
+```
+
+5. Import and call `watchCollection` from our package
+
+```
+import { watchCollection } from '@silikastudio/nft-twitter-sales-bot';
+
+watchCollection(args)
+```
+*Note: See the comments above `watchCollection` in `/src/index.ts` for up-to-date explanations of all the arguments accepted*
+
+*Another note: See `examples/example.ts` for an example of importing the `watchCollection` method and calling it with the required arguments.
 
 ## Tweet formatting
 
@@ -63,6 +101,22 @@ The templates accept the following keywords, which will be replaced with the tra
 
 - `$$TRANSACTION_HASH$$`: The transaction hash for the sale, most likely used as follows: `'transaction link: https://etherscan.io/tx/$$TRANSACTION_HASH$$`'
 
+## Fetching the ABI
+Fetching the contract ABI is fairly easy! You need to pass in the ABI when running the bot as the ABI is what lets us know what functions exist on the contract as well as what arguments they take. Here's how to find it:
+
+1. Find the contract on Etherscan
+    - eg: https://etherscan.io/token/0xda64C62254E6ffE6783Dd00472559A1744512846
+    - If you don't know how to find the contract address, go to any item in the collection on OpenSea and click on the "contract" link under the "Details" section
+1. Go to the "Contract" tab
+1. Scroll down and copy everything in the "Contract ABI" section
+1. Save it to a file in your project with a ".json" extension
+1. Import it like so
+```
+import abi from "./abiFileName.json"
+```
+    - Note: ensure you set `compilerOptions.resolveJsonModule` to `true` in your tsconfig.json in order for this import to work
+1. Pass `JSON.stringify(abi)` to the `watchCollection` method
+
 ## Customisability
 If you want to just use the collection-watching functionality of the bot, an `onSaleCallback` is accepted.
 
@@ -71,6 +125,13 @@ If provided, whenever a sale occurs we'll call this method with all the sale inf
 ```
 totalPrice, currencyName, tokenId, contractAddress, assetName
 ```
+
+# RPC providers
+When instantiating a new `ethers.Contract`, you need to pass a a "Provider". A "Provider" is essentially a connection to the blockchain, something that allows you to actually call a contract's methods.
+
+We currently support Alchemy, Etherscan, and Infura, and are happy to add more per user requests.
+
+Signing up for an Alchemy API key is free and very easy, and will give you many more requests per month than one bot would need. You can sign up for one [here](https://www.alchemy.com/)
 
 # Twitter API key
 

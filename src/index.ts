@@ -34,7 +34,8 @@ import { getSeaportSalePrice, getTokenData } from './utils';
   Currently accept: Alchemy, Etherscan, and Infura.
  * @param apiKey Optional API key for the provider
  * @param twitterConfig Config for the Twitter connection. If undefined,
- the bot won't tweet anything.
+ the bot won't tweet anything. All these keys and secrets can be found
+ in the Twitter developer dashboard.
  * @param onSaleCallback Optional callback which will be called with
  all the sale data upon every sale.
  */
