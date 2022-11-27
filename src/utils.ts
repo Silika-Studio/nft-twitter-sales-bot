@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import axios from 'axios';
 import { ethers } from 'ethers';
-import { currencies, OPENSEA_IPFS_GATEWAY } from './constants';
+import sharp from 'sharp';
+import { currencies, IPFS_GATEWAY } from './constants';
 import {
     DecodedOSLogData,
     IndividualConsideration,
     IndividualOffer,
-    TokenData,
+    TokenDataWithImageBuffer,
     TokenUriResponse
 } from './types';
 
@@ -105,7 +106,7 @@ export const getSeaportSalePrice = (
 
 const ipfsLocationToHttpsGateway = (ipfsLoc: string) =>
     ipfsLoc.includes('ipfs://') ?
-        `${OPENSEA_IPFS_GATEWAY}/${ipfsLoc
+        `${IPFS_GATEWAY}/${ipfsLoc
             .replace('ipfs://', 'ipfs/')}` :
         ipfsLoc;
 
@@ -120,7 +121,7 @@ const ipfsLocationToHttpsGateway = (ipfsLoc: string) =>
 export const getTokenData = async (
     contract: ethers.Contract,
     tokenId: string,
-): Promise<TokenData> => {
+): Promise<TokenDataWithImageBuffer> => {
     try {
         const tokenURI = await contract.tokenURI(tokenId);
         const { image, name, image_url } =
@@ -132,12 +133,22 @@ export const getTokenData = async (
         const safeImageUrl = image ?? image_url;
         const httpImageUrl = ipfsLocationToHttpsGateway(safeImageUrl);
 
+        const buffer = Buffer.from(await sharp((await axios.get(
+            httpImageUrl,
+            { responseType: 'arraybuffer' },
+        )).data).resize({
+            width: 1200,
+        })
+            .webp()
+            .toBuffer());
+
         console.log({ assetName: name ?? tokenId, imageUrl: httpImageUrl });
 
         return {
             assetName: name ?? tokenId,
             imageUrl: httpImageUrl,
             id: tokenId,
+            buffer
         };
     } catch (error: any) {
         console.log('There was an error in resolving the tokenURI!');
@@ -147,6 +158,6 @@ export const getTokenData = async (
         } else {
             console.error(error.message);
         }
-        return { assetName: tokenId, imageUrl: '', id: tokenId };
+        return { assetName: tokenId, imageUrl: '', id: tokenId, buffer: Buffer.from([]) };
     }
 };

@@ -1,3 +1,4 @@
+import { HexColorString } from 'discord.js';
 import { ParamType } from 'ethers/lib/utils';
 import { TwitterApiTokens } from 'twitter-api-v2';
 
@@ -119,10 +120,23 @@ export interface TweetConfig extends TwitterApiTokens {
     includeImage?: boolean;
 }
 
+/**
+ * 
+ */
+export interface DiscordConfig {
+    botToken: string;
+    channelId: string;
+    messageColour: HexColorString;
+}
+
 export interface TokenData {
     assetName: string;
     imageUrl: string;
     id: string;
+}
+
+export interface TokenDataWithImageBuffer extends TokenData {
+    buffer: Buffer;
 }
 
 export interface TokenUriResponse {

@@ -1,5 +1,5 @@
 {
-    "version": "1.0.7",
+    "version": "1.0.8",
     "name": "@silikastudio/nft-twitter-sales-bot",
     "description": "An open-source TypeScript package for posting sales of an NFT collection to twitter.",
     "publishConfig": {
@@ -37,6 +37,8 @@
     "homepage": "https://github.com/Silika-Studio/twitter-sales-bot#readme",
     "dependencies": {
         "axios": "^0.24.0",
+        "date-fns": "^2.29.3",
+        "discord.js": "13.12.0",
         "ethers": "^5.5.4",
         "sharp": "^0.30.7",
         "twitter-api-v2": "^1.12.3"

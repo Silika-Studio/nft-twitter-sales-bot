@@ -1,8 +1,6 @@
 
-import axios from 'axios';
-import sharp from 'sharp';
 import { SendTweetV2Params, TwitterApi } from 'twitter-api-v2';
-import { MarketName, TokenData } from './types';
+import { MarketName, TokenDataWithImageBuffer } from './types';
 
 /**
  * Get the specific marketplace link to the sold asset
@@ -71,7 +69,7 @@ const fillTweetTemplate = (
 export const tweet = async (
     twitterClient: TwitterApi,
     tweetTemplate: string,
-    tokenData: TokenData[],
+    tokenData: TokenDataWithImageBuffer[],
     price: string,
     marketplaceName: MarketName,
     txHash: string,
@@ -89,17 +87,9 @@ export const tweet = async (
             try {
                 // Retrieve the image, resize and convert to webp.
                 // Twitter has a 5.2 mb byte limit to uploaded images
-                const buffer = Buffer.from(await sharp((await axios.get(
-                    imageUrl,
-                    { responseType: 'arraybuffer' },
-                )).data).resize({
-                    width: 1200,
-                })
-                    .webp()
-                    .toBuffer());
                 mediaIds.push({
                     id: await twitterClient.v1.uploadMedia(
-                        buffer,
+                        token.buffer,
                         { mimeType: 'webp' },
                     ),
                     name: token.assetName,

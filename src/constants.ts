@@ -184,4 +184,4 @@ export const saleEventSignatures = [
     '0x9d9af8e38d66c62e2c12f0225249fd9d721c54b83f48d9352c97c6cacdcb6f31',
 ];
 
-export const OPENSEA_IPFS_GATEWAY = 'https://opensea.mypinata.cloud';
+export const IPFS_GATEWAY = 'https://ipfs.io';

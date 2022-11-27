@@ -1,6 +1,6 @@
 import { config } from "dotenv";
 import { watchCollection } from '../src/index';
-import { TweetConfig } from '../src/types';
+import { DiscordConfig, TweetConfig } from '../src/types';
 import abi from './abi.json';
 
 config();
@@ -15,10 +15,17 @@ const twitterConfig: TweetConfig = {
     includeImage: true,
 };
 
+const discordConfig: DiscordConfig = {
+    botToken: process.env.DISCORD_BOT_KEY!,
+    channelId: process.env.DISCORD_CHANNEL_ID!,
+    messageColour: '#A8DFFF'
+}
+
 watchCollection(
-    '0x2a459947f0ac25ec28c197f09c2d88058a83f3bb',
+    '0x05072a7137d11e281cef6f58e00dba69d66616da',
     JSON.stringify(abi),
     'alchemy',
     process.env.ALCHEMY_API_KEY!,
     twitterConfig,
+    discordConfig
 );

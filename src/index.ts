@@ -17,11 +17,14 @@ import {
     currencies,
     markets,
     saleEventSignatures,
-    transferEventSignature
+    transferEventSignature,
 } from './constants';
+import { createMessage, discordSetup } from './discord';
 import { tweet } from './tweet';
-import { DecodedOSLogData, TweetConfig } from './types';
+import { DecodedOSLogData, DiscordConfig, MarketName, TweetConfig } from './types';
 import { getSeaportSalePrice, getTokenData } from './utils';
+import fs from 'fs';
+import { onTransaction } from './handler';
 
 /**
  * A function that will monitor a collection for all NFT sales,
@@ -45,6 +48,7 @@ export const watchCollection = async (
     provider: 'alchemy' | 'etherscan' | 'infura',
     apiKey?: string,
     twitterConfig?: TweetConfig,
+    discordConfig?: DiscordConfig,
     onSaleCallback?: (
         price: number,
         currencyName: string,
@@ -68,6 +72,8 @@ export const watchCollection = async (
             break;
     }
     const twitterClient = twitterConfig && new TwitterApi(twitterConfig);
+    const discordChannel = discordConfig &&
+        await discordSetup(discordConfig.botToken, discordConfig.channelId);
     const contract =
         new ethers.Contract(contractAddress, abi, providerInstance);
 
@@ -76,108 +82,22 @@ export const watchCollection = async (
 
     // https://docs.ethers.io/v5/api/contract/contract/#Contract-on
     // First 3 params map to the Transfer event's `address,address,uint256` args
-    contract.on('Transfer',
-        async (_from: string, _to: string, _id: BigNumber, data: any) => {
-            const transactionHash = data.transactionHash.toLowerCase();
-            let tokens: string[] = [];
-            let totalPrice = 0;
+    contract.on('Transfer', (_from: string, _to: string, _id: BigNumber, data: any) => {
+        const transactionHash = data.transactionHash.toLowerCase();
 
-            // duplicate transaction - skip process
-            if (transactionHash == lastTransactionHash) {
-                return;
-            }
+        // duplicate transaction - skip process
+        if (transactionHash == lastTransactionHash) {
+            return;
+        }
 
-            lastTransactionHash = transactionHash;
-
-            /*
-        This callback is called whenever there is a Transfer event on
-         the token's contract. When called, we don't yet have the
-         context of how/why it was called. In order to see if this
-         was a sale, we have to get the context of the tx as a whole
-         and look at the `to` (to = marketplace, from = buyer/seller).
-         In addition, in order to calculate the price paid, we need
-         to see the logs of the tx, stored in the tx receipt.
-        */
-            const receipt = await data.getTransactionReceipt();
-            const recipient = receipt.to.toLowerCase();
-
-            // not a marketplace transaction transfer, skip
-            if (!(recipient in markets)) {
-                return;
-            }
-            // retrieve market details
-            const market = markets[recipient];
-
-            // default to eth, see `constants.ts` for other supported currencies
-            let currencyAddress = '0x0000000000000000000000000000000000000000';
-            // Look for whether a non-ETH token was used
-            receipt.logs.forEach((log: any) => {
-                const logAddress = log.address.toLowerCase();
-                if (logAddress in currencies) {
-                    currencyAddress = logAddress;
-                }
-            });
-            const currency = currencies[currencyAddress];
-
-            // Look for all transferred tokens
-            receipt.logs.forEach((log: any) => {
-                // First topic for events is the event signature, 4th is the ID
-                // Always true for all standard ERC-721 Transfer events.
-                // The Transfer event has 3 args, all indexed,
-                // so we know `data` is empty
-                if (log.data === '0x' &&
-                    log.topics[0] === transferEventSignature) {
-                    const tokenId =
-                        ethers.BigNumber.from(log.topics[3]).toString();
-                    tokens.push(tokenId);
-                }
-            });
-
-            // Calculate price paid
-            receipt.logs.forEach((log: any) => {
-                const logAddress = log.address.toLowerCase();
-                if (
-                    logAddress == recipient &&
-                    saleEventSignatures.includes(log.topics[0])
-                ) {
-
-                    const decodedLogData =
-                        ethers.utils.defaultAbiCoder.decode(
-                            market.logDecoder as ParamType[]
-                            , log.data,
-                        ) as unknown as DecodedOSLogData;
-                    switch (market.id) {
-                        case 'OpenSea (Seaport)':
-                            totalPrice +=
-                                getSeaportSalePrice(
-                                    decodedLogData,
-                                    contractAddress,
-                                );
-                            break;
-                        case 'X2Y2':
-                            totalPrice += parseFloat(ethers.utils.formatUnits(
-                                decodedLogData.amount,
-                                currency.decimals,
-                            ));
-                            break;
-                        default:
-                            totalPrice += parseFloat(ethers.utils.formatUnits(
-                                decodedLogData.price,
-                                currency.decimals,
-                            ));
-                    }
-                }
-            });
-
-            totalPrice = parseFloat(totalPrice.toFixed(4));
-            console.log(`${totalPrice} ${currency.name} on ${market.id}`);
-
-            // remove any dupes
-            tokens = tokens.filter((t, i) => tokens.indexOf(t) === i);
-
-            // retrieve metadata for the first (or only) ERC721 asset sold
+        const onSale = async (
+            price: number,
+            currencyName: string,
+            tokenIds: string[],
+            market: MarketName,
+        ) => {
             const tokenData = await Promise.all(
-                tokens.slice(0, 4).map(token =>
+                tokenIds.slice(0, 4).map(token =>
                     getTokenData(contract, token),
                 ),
             );
@@ -185,9 +105,9 @@ export const watchCollection = async (
             // If a callback was passed in, call it
             if (onSaleCallback)
                 onSaleCallback(
-                    totalPrice,
-                    currency.name,
-                    tokens[0],
+                    price,
+                    currencyName,
+                    tokenIds[0],
                     contractAddress,
                     tokenData[0].assetName,
                 );
@@ -195,14 +115,14 @@ export const watchCollection = async (
             if (twitterClient) {
                 const args = [
                     twitterClient,
-                    tokens.length === 1 ?
+                    tokenIds.length === 1 ?
                         twitterConfig.tweetTemplateSingle :
                         twitterConfig.tweetTemplateMulti,
                     tokenData,
-                    `${totalPrice} ${currency.name}`,
-                    market.name,
+                    `${price} ${currencyName}`,
+                    market,
                     transactionHash,
-                    tokens.length,
+                    tokenIds.length,
                     contractAddress,
                     !!twitterConfig.includeImage,
                 ] as const; // Necessary such that
@@ -210,7 +130,28 @@ export const watchCollection = async (
 
                 tweet(...args);
             }
-        });
+
+            if (discordChannel) {
+                const message = createMessage(
+                    tokenData,
+                    price,
+                    _to,
+                    _from,
+                    contractAddress,
+                    discordConfig.messageColour
+                );
+                try {
+                    await discordChannel.send({ embeds: [message] });
+                } catch (e: any) {
+                    console.log('Error sending message', ' ', e.message);
+                }
+            }
+        };
+
+        lastTransactionHash = transactionHash;
+        onTransaction(_from, _to, _id, data, onSale);
+    });
+
 };
 
 export * from './types';
