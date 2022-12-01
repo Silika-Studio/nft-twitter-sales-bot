@@ -27,7 +27,8 @@ watchCollection(
     'alchemy',
     process.env.ALCHEMY_API_KEY!,
     // twitterConfig,
-    // discordConfig
+    undefined,
+    discordConfig
 );
 
 // ()

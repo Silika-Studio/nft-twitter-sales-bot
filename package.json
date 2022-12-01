@@ -1,5 +1,5 @@
 {
-    "version": "1.0.9",
+    "version": "1.0.10",
     "name": "@silikastudio/nft-twitter-sales-bot",
     "description": "An open-source TypeScript package for posting sales of an NFT collection to twitter.",
     "publishConfig": {

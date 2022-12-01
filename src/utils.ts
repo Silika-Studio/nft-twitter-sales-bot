@@ -133,6 +133,7 @@ export const getTokenData = async (
     try {
         const tokenURI: string = await contract.tokenURI(tokenId);
         const httpsTokenUri = ipfsOrArweaveToHttps(tokenURI);
+        console.log(httpsTokenUri);
         const { image, name } = (await axios.get(httpsTokenUri)).data;
         const imageUrl = ipfsOrArweaveToHttps(image);
         console.log(imageUrl);
