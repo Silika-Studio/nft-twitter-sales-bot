@@ -22,10 +22,12 @@ const discordConfig: DiscordConfig = {
 }
 
 watchCollection(
-    '0x05072a7137d11e281cef6f58e00dba69d66616da',
+    '0x6c410cf0b8c113dc6a7641b431390b11d5515082',
     JSON.stringify(abi),
     'alchemy',
     process.env.ALCHEMY_API_KEY!,
-    twitterConfig,
-    discordConfig
+    // twitterConfig,
+    // discordConfig
 );
+
+// ()

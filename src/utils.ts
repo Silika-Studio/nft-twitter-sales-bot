@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/naming-convention */
 import axios from 'axios';
 import { ethers } from 'ethers';
@@ -105,10 +106,17 @@ export const getSeaportSalePrice = (
 };
 
 const ipfsLocationToHttpsGateway = (ipfsLoc: string) =>
-    ipfsLoc.includes('ipfs://') ?
-        `${IPFS_GATEWAY}/${ipfsLoc
-            .replace('ipfs://', 'ipfs/')}` :
-        ipfsLoc;
+    `${IPFS_GATEWAY}/ipfs/${ipfsLoc
+        .replace('ipfs://', '')}`;
+
+const openseaURL = (contractAddress: string, tokenId: string) =>
+    `https://api.opensea.io/api/v1/asset/${contractAddress}/${tokenId}?include_orders=false`;
+
+const arweaveLocationToHttpsGateway = (arURI: string) =>
+    `https://arweave.net/${arURI.replace('ar://', '')}`;
+
+const ipfsOrArweaveToHttps = (uri: string) =>
+    uri.includes('ipfs://') ? ipfsLocationToHttpsGateway(uri) : arweaveLocationToHttpsGateway(uri);
 
 /**
  * Get the asset's name and image url by calling the contract's `tokenURI`
@@ -123,18 +131,14 @@ export const getTokenData = async (
     tokenId: string,
 ): Promise<TokenDataWithImageBuffer> => {
     try {
-        const tokenURI = await contract.tokenURI(tokenId);
-        const { image, name, image_url } =
-            (await axios.get<TokenUriResponse>(
-                ipfsLocationToHttpsGateway(tokenURI),
-            )).data;
-        console.log(tokenURI);
-        console.log(image_url);
-        const safeImageUrl = image ?? image_url;
-        const httpImageUrl = ipfsLocationToHttpsGateway(safeImageUrl);
+        const tokenURI: string = await contract.tokenURI(tokenId);
+        const httpsTokenUri = ipfsOrArweaveToHttps(tokenURI);
+        const { image, name } = (await axios.get(httpsTokenUri)).data;
+        const imageUrl = ipfsOrArweaveToHttps(image);
+        console.log(imageUrl);
 
         const buffer = Buffer.from(await sharp((await axios.get(
-            httpImageUrl,
+            imageUrl,
             { responseType: 'arraybuffer' },
         )).data).resize({
             width: 1200,
@@ -142,11 +146,11 @@ export const getTokenData = async (
             .webp()
             .toBuffer());
 
-        console.log({ assetName: name ?? tokenId, imageUrl: httpImageUrl });
+        console.log({ assetName: name ?? tokenId, imageUrl });
 
         return {
             assetName: name ?? tokenId,
-            imageUrl: httpImageUrl,
+            imageUrl,
             id: tokenId,
             buffer
         };
